@@ -9,8 +9,7 @@ ydt 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vi
 3. 该插件依赖于ruby，目前在ruby 1.9.2 上没有问题, 同时依赖一个xml解析库 [REXML](http://raa.ruby-lang.org/project/rexml/) 请下载安装
 
 
-License
--------
+##License
 Copyright (c) ianva
 
 
