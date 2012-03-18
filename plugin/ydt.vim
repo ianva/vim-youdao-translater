@@ -1,6 +1,7 @@
 "
 if !has("ruby")
-  finish
+    echo "Please install ruby support for your vim"
+    finish
 end
 " This function taken from the lh-vim repository
 function! s:GetVisualSelection()
