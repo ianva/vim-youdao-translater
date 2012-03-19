@@ -46,8 +46,12 @@ end
 def translate_visual_selection 
     word = VIM::evaluate "<SID>GetVisualSelection()"
     info = get_wordInfo word
-    if info
-        print " #{word}: [#{info["phonetic-symbol"]}] #{info["content"].join(" | ")}" 
+    if info 
+        if info["content"]
+            print " #{word}: [#{info["phonetic-symbol"]}] #{info["content"].join(" | ")}" 
+        else
+            print " Not found \"#{word}\" the meanings"
+        end
     else
         print "Error while querying Youdao"
     end
