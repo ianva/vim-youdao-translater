@@ -48,7 +48,7 @@ def translate_visual_selection
     info = get_wordInfo word
     if info 
         if info["content"]
-            print " #{info["return-phrase"]}: [#{info["phonetic-symbol"]}] #{info["content"].join(" | ")}" 
+            print " #{info["return-phrase"]}:#{info["phonetic-symbol"]=='' ? info["phonetic-symbol"] :info["phonetic-symbol"] = " ["+info["phonetic-symbol"]+"]"} #{info["content"].join(" | ")}" 
         else
             print " Not found \"#{word}\" the meanings"
         end
