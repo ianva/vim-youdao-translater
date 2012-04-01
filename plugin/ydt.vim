@@ -45,6 +45,7 @@ end
 
 def translate_visual_selection 
     word = VIM::evaluate "<SID>GetVisualSelection()"
+    return 
     info = get_wordInfo word
     if info 
         if info["content"]
