@@ -43,13 +43,25 @@ def get_wordInfo word
     info
 end
 
+def print msg
+    VIM::message msg
+    return
+end
+
+
 def translate_visual_selection 
     word = VIM::evaluate "<SID>GetVisualSelection()"
-    return 
     info = get_wordInfo word
+    
     if info 
-        if info["content"]
-            print " #{info["return-phrase"]}:#{info["phonetic-symbol"]=='' ? info["phonetic-symbol"] :info["phonetic-symbol"] = " ["+info["phonetic-symbol"]+"]"} #{info["content"].join(" | ")}" 
+        if content = info["content"]
+            content = content.join(" | ")
+            symbol = info["phonetic-symbol"]
+            output = []
+            output << info["return-phrase"]
+            output << "[#{symbol}]" unless symbol.nil? or symbol.empty?
+            output << content
+            print output.join(' ')
         else
             print " Not found \"#{word}\" the meanings"
         end
@@ -65,3 +77,4 @@ function! s:YoudaoTranslate()
 endfunction
 
 command Ydt :call <SID>YoudaoTranslate()
+
