@@ -51,7 +51,6 @@ end
 def translate_visual_selection 
     word = VIM::evaluate "<SID>GetVisualSelection()"
     info = get_wordInfo word
-    msg = ''
     if info 
         if content = info["content"]
             content = content.join(" | ")
@@ -60,14 +59,14 @@ def translate_visual_selection
             output << info["return-phrase"]
             output << "[#{symbol}]" unless symbol.nil? or symbol.empty?
             output << content.to_s
-            msg = output.join(' ')
+            output = output.join(' ')
         else
-            msg = " 找不到该单词的释义"
+            output = " 找不到该单词的释义"
         end
     else
-        msg = " 有道翻译查询出错!"
+        output = " 有道翻译查询出错!"
     end
-    VIM::command("echo \"#{msg}\"")
+    VIM::command("echo \"#{output}\"")
 end 
 
 EOF
