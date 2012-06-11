@@ -43,10 +43,6 @@ def get_wordInfo word
     info
 end
 
-def print msg
-    VIM::message msg
-    return
-end
 
 def translate_visual_selection 
     word = VIM::evaluate "<SID>GetVisualSelection()"
@@ -76,4 +72,3 @@ function! s:YoudaoTranslate()
 endfunction
 
 command Ydt :call <SID>YoudaoTranslate()
-
