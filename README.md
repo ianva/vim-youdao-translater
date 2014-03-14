@@ -10,7 +10,7 @@ ydt 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vi
 2. pathogen 安装  
 
 		cd ~/.vim/bundle
-		git clon git@github.com:ianva/vim-youdao-translater.git
+		git clone git@github.com:ianva/vim-youdao-translater.git
 
 
 注：插件依赖于python 的 Requests， 安装 Requests：`sudo pip install requests`。
