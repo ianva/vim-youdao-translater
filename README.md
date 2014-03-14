@@ -11,8 +11,8 @@ vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao
 ### pathogen 安装
 如果装有 pathogen 可以 :
 
-		cd ~/.vim/bundle
-		git clone git@github.com:ianva/vim-youdao-translater.git
+	cd ~/.vim/bundle
+	git clone git@github.com:ianva/vim-youdao-translater.git
 
 
 ###  其他
