@@ -49,7 +49,7 @@ def get_word_info(word):
                 info[el.tag].append(el.text)
 
         for k,v in info.items():
-            info[k] = '|'.join(v) if k == "content" else ' '.join(v)
+            info[k] = ' | '.join(v) if k == "content" else ' '.join(v)
 
         tpl = ' %(return-phrase)s'
         if info["phonetic-symbol"]:
