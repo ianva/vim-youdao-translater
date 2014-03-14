@@ -1,8 +1,8 @@
-"
-if !has("ruby")
-    echo "Please install ruby support for your vim"
+if !has('python')
+    echo "Error: Required vim compiled with +python"
     finish
-end
+endif
+
 " This function taken from the lh-vim repository
 function! s:GetVisualSelection()
     try
@@ -14,61 +14,77 @@ function! s:GetVisualSelection()
     endtry
 endfunction
 
-ruby << EOF
-require 'net/http'
-require 'rexml/document'
-
-include Net
-include REXML
-
-def get_wordInfo word
-    headers, body = HTTP.new("dict.youdao.com").get "/fsearch?q=#{word}"
-    info = {}
-    if headers.code == '200'
-        doc = Document.new body
-        XPath.each(doc,'//*') { |node| 
-            case node.name
-            when "return-phrase", "phonetic-symbol"	
-                info[node.name] = node.text.to_s
-            when "content", "value"
-                unless info[node.name].class.to_s == "Array"
-                    info[node.name]=[]
-                end
-                info[node.name] << node.text
-            end
-        }
-    else
-	    info = nil
-    end
-    info
-end
+function! s:GetCursorWord()
+    return expand("<cword>")
+endfunction
 
 
-def translate_visual_selection 
-    word = VIM::evaluate "<SID>GetVisualSelection()"
-    info = get_wordInfo word
-    if info 
-        if content = info["content"]
-            content = content.join(" | ")
-            symbol = info["phonetic-symbol"]
-            output = []
-            output << info["return-phrase"]
-            output << "[#{symbol}]" unless symbol.nil? or symbol.empty?
-            output << content.to_s
-            output = output.join(' ')
-        else
-            output = " 找不到该单词的释义"
-        end
-    else
-        output = " 有道翻译查询出错!"
-    end
-    VIM::command("echo \"#{output}\"")
-end 
+python << EOF
+import vim,requests,collections,xml.etree.ElementTree as ET
+
+# -*- coding: utf-8 -*-
+
+WARN_NOT_FIND = " 找不到该单词的释义"
+ERROR_QUERY = " 有道翻译查询出错!"
+
+
+def get_word_info(word):
+    if not word:
+        return ''
+    r = requests.get("http://dict.youdao.com" + "/fsearch?q=" + word)
+    if r.status_code == 200:
+
+        doc = ET.fromstring(r.content)
+        info = collections.defaultdict(list)
+
+
+        if not len(doc.findall(".//content")):
+            return WARN_NOT_FIND.decode('utf-8')
+
+        for el in doc.findall(".//"):
+            if el.tag in ('return-phrase','phonetic-symbol'):
+                if el.text:
+                    info[el.tag].append(el.text)
+            elif el.tag in ('content','value'):
+                info[el.tag].append(el.text)
+
+        for k,v in info.items():
+            info[k] = '|'.join(v) if k == "content" else ' '.join(v)
+
+        tpl = ' %(return-phrase)s'
+        if info["phonetic-symbol"]:
+            tpl = tpl + ' [%(phonetic-symbol)s]'
+        tpl = tpl +' %(content)s' 
+
+        return tpl % info
+
+    else:
+        return  ERROR_QUERY.decode('utf-8')
+
+def translate_visual_selection(word):
+
+    word = word.decode('utf-8')
+    info = get_word_info( word )
+    vim.command('echo "'+ info +'"')
 
 EOF
 
-function! s:YoudaoTranslate()
-    ruby translate_visual_selection
+function! s:YoudaoVisualTranslate()
+    python translate_visual_selection(vim.eval("<SID>GetVisualSelection()"))
 endfunction
 
-command Ydt :call <SID>YoudaoTranslate()
+function! s:YoudaoCursorTranslate()
+    python translate_visual_selection(vim.eval("<SID>GetCursorWord()"))
+endfunction
+
+function! s:YoudaoEnterTranslate()
+    let word = input("Please enter the word: ")
+    exe "norm! \<Esc><CR>"
+    python translate_visual_selection(vim.eval("word"))
+endfunction
+
+command Ydv :call <SID>YoudaoVisualTranslate()
+command Ydc :call <SID>YoudaoCursorTranslate()
+command Yde :call <SID>YoudaoEnterTranslate()
+
+
