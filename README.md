@@ -8,7 +8,7 @@ vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao
 把 `ydt.vim` 文件拷贝到 `~/.vim/plugin` 目录下，就可以用了。 
 
 
-### pathogen 安装
+### pathogen 安装：
 如果装有 pathogen 可以 :
 
 	cd ~/.vim/bundle
