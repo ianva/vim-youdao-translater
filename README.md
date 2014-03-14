@@ -1,6 +1,6 @@
-# vim youdao translater(ydt)
+# vim youdao translater
 
-ydt 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vim插件，可以帮你在 vim 中翻译单词
+vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vim插件，可以帮你在 vim 中翻译单词
 
 ##安装
 
