@@ -4,16 +4,19 @@ vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao
 
 ##安装
 
-1. 普通安装
-把 `ydt.vim` 文件拷贝到 `~/.vim/plugin` 目录下。 
+###普通安装:  
+把 `ydt.vim` 文件拷贝到 `~/.vim/plugin` 目录下，就可以用了。 
 
-2. pathogen 安装  
+
+### pathogen 安装
+如果装有 pathogen 可以 :
 
 		cd ~/.vim/bundle
 		git clone git@github.com:ianva/vim-youdao-translater.git
 
 
-注：插件依赖于python 的 Requests， 安装 Requests：`sudo pip install requests`。
+###  其他
+插件依赖于python 的 Requests， 安装 Requests：`sudo pip install requests`。
 
 添加 `~/.vimrc` 文件：
 
