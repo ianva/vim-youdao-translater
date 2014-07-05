@@ -1,19 +1,22 @@
-# vim youdao translater(ydt)
+# vim youdao translater
 
-ydt 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vim插件，可以帮你在 vim 中翻译单词
+vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vim插件，可以帮你在 vim 中翻译单词
 
 ##安装
 
-1. 普通安装
-把 `ydt.vim` 文件拷贝到 `~/.vim/plugin` 目录下。 
-
-2. pathogen 安装  
-
-		cd ~/.vim/bundle
-		git clon git@github.com:ianva/vim-youdao-translater.git
+###普通安装:  
+把 `ydt.vim` 文件拷贝到 `~/.vim/plugin` 目录下，就可以用了。 
 
 
-注：插件依赖于python 的 Requests， 安装 Requests：`sudo pip install requests`。
+### pathogen 安装：
+如果装有 pathogen 可以 :
+
+	cd ~/.vim/bundle
+	git clone git@github.com:ianva/vim-youdao-translater.git
+
+
+###  其他
+插件依赖于python 的 Requests， 安装 Requests：`sudo pip install requests`。
 
 添加 `~/.vimrc` 文件：
 
@@ -37,5 +40,6 @@ ydt 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vi
 
 ##License
 Copyright (c) ianva
+
 
 

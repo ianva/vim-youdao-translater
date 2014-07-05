@@ -27,7 +27,6 @@ import vim,requests,collections,xml.etree.ElementTree as ET
 WARN_NOT_FIND = " 找不到该单词的释义"
 ERROR_QUERY = " 有道翻译查询出错!"
 
-
 def get_word_info(word):
     if not word:
         return ''
@@ -44,12 +43,12 @@ def get_word_info(word):
         for el in doc.findall(".//"):
             if el.tag in ('return-phrase','phonetic-symbol'):
                 if el.text:
-                    info[el.tag].append(el.text)
+                    info[el.tag].append(el.text.encode("utf-8"))
             elif el.tag in ('content','value'):
-                info[el.tag].append(el.text)
+                info[el.tag].append(el.text.encode("utf-8"))
 
         for k,v in info.items():
-            info[k] = '|'.join(v) if k == "content" else ' '.join(v)
+            info[k] = ' | '.join(v) if k == "content" else ' '.join(v)
 
         tpl = ' %(return-phrase)s'
         if info["phonetic-symbol"]:
