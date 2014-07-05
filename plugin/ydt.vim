@@ -83,8 +83,8 @@ function! s:YoudaoEnterTranslate()
     python translate_visual_selection(vim.eval("word"))
 endfunction
 
-command Ydv :call <SID>YoudaoVisualTranslate()
-command Ydc :call <SID>YoudaoCursorTranslate()
-command Yde :call <SID>YoudaoEnterTranslate()
+command! Ydv :call <SID>YoudaoVisualTranslate()
+command! Ydc :call <SID>YoudaoCursorTranslate()
+command! Yde :call <SID>YoudaoEnterTranslate()
 
 
