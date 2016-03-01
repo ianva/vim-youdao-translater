@@ -53,7 +53,7 @@ def get_word_info(word):
         tpl = ' %(return-phrase)s'
         if info["phonetic-symbol"]:
             tpl = tpl + ' [%(phonetic-symbol)s]'
-        tpl = tpl +' %(content)s' 
+        tpl = tpl +' %(content)s'
 
         return tpl % info
 
