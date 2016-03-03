@@ -45,7 +45,8 @@ def get_word_info(word):
                 if el.text:
                     info[el.tag].append(el.text.encode("utf-8"))
             elif el.tag in ('content','value'):
-                info[el.tag].append(el.text.encode("utf-8"))
+                if el.text:
+                    info[el.tag].append(el.text.encode("utf-8"))
 
         for k,v in info.items():
             info[k] = ' | '.join(v) if k == "content" else ' '.join(v)
@@ -53,7 +54,7 @@ def get_word_info(word):
         tpl = ' %(return-phrase)s'
         if info["phonetic-symbol"]:
             tpl = tpl + ' [%(phonetic-symbol)s]'
-        tpl = tpl +' %(content)s' 
+        tpl = tpl +' %(content)s'
 
         return tpl % info
 
