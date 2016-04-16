@@ -27,11 +27,14 @@ import vim,urllib,re,collections,xml.etree.ElementTree as ET
 WARN_NOT_FIND = " 找不到该单词的释义".decode('utf-8')
 ERROR_QUERY = " 有道翻译查询出错!".decode('utf-8')
 NETWORK_ERROR = " 无法连接有道服务器!".decode('utf-8')
+QUERY_BLACK_LIST = ['.', '|', '^', '$', '\\', '[', ']', '{', '}', '*', '+',
+        '?', '(', ')', '&', '=', '\"', '\'', '\t']
 
-def split_word(word):
-    array = []
-    for i in word.split('_'):
-        array += i.split('\n')
+def preprocess_word(word):
+    word = word.strip()
+    for i in QUERY_BLACK_LIST:
+        word = word.replace(i, ' ')
+    array = word.split('_')
     word = []
     p = re.compile('[a-z][A-Z]')
     for piece in array:
@@ -40,11 +43,10 @@ def split_word(word):
             word.append(piece[lastIndex:i.start() + 1])
             lastIndex = i.start() + 1
         word.append(piece[lastIndex:])
-    return ' '.join(word)
+    return ' '.join(word).strip()
 
 def get_word_info(word):
-    word = word.strip()
-    word = split_word(word)
+    word = preprocess_word(word)
     if not word:
         return ''
     try:
@@ -87,16 +89,17 @@ def get_word_info(word):
                     % word.encode('utf-8'))
             s = p.search(r.read())
             if s:
-                return "%s %s" % (word, s.group('result').decode('utf-8'))
+                return " %s %s" % (word, s.group('result').decode('utf-8'))
             else:
                 return ERROR_QUERY
     else:
         return  ERROR_QUERY
 
-def translate_visual_selection(word):
-    word = word.decode('utf-8')
-    info = get_word_info( word )
-    vim.command('echo "'+ info +'"')
+def translate_visual_selection(lines):
+    lines = lines.decode('utf-8')
+    for line in lines.split('\n'):
+        info = get_word_info(line)
+        vim.command('echo "'+ info +'"')
 
 EOF
 
