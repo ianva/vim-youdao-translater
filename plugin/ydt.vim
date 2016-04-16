@@ -49,33 +49,43 @@ def get_word_info(word):
         doc = ET.fromstring(r.content)
         info = collections.defaultdict(list)
 
-
         if not len(doc.findall(".//content")):
             return WARN_NOT_FIND.decode('utf-8')
 
-        for el in doc.findall(".//"):
-            if el.tag in ('return-phrase','phonetic-symbol'):
-                if el.text:
-                    info[el.tag].append(el.text.encode("utf-8"))
-            elif el.tag in ('content','value'):
-                if el.text:
-                    info[el.tag].append(el.text.encode("utf-8"))
+        phrase = doc.find(".//return-phrase").text
+        p = re.compile(r"^%s$"%word, re.IGNORECASE)
+        if p.match(phrase):
+            for el in doc.findall(".//"):
+                if el.tag in ('return-phrase','phonetic-symbol'):
+                    if el.text:
+                        info[el.tag].append(el.text.encode("utf-8"))
+                elif el.tag in ('content','value'):
+                    if el.text:
+                        info[el.tag].append(el.text.encode("utf-8"))
 
-        for k,v in info.items():
-            info[k] = ' | '.join(v) if k == "content" else ' '.join(v)
+            for k,v in info.items():
+                info[k] = ' | '.join(v) if k == "content" else ' '.join(v)
 
-        tpl = ' %(return-phrase)s'
-        if info["phonetic-symbol"]:
-            tpl = tpl + ' [%(phonetic-symbol)s]'
-        tpl = tpl +' %(content)s'
+            tpl = ' %(return-phrase)s'
+            if info["phonetic-symbol"]:
+                tpl = tpl + ' [%(phonetic-symbol)s]'
+            tpl = tpl +' %(content)s'
 
-        return tpl % info
+            return tpl % info
+        else:
+            r = requests.get("http://fanyi.youdao.com" + "/translate?i=" + word)
+            p = re.compile(r"\"translateResult\":\[\[{\"src\":\"%s\",\"tgt\":\"(?P<result>.*)\"}\]\]"
+                    % word.encode('utf-8'))
+            s = p.search(r.content)
+            if s:
+                return "%s %s" % (word, s.group('result').decode('utf-8'))
+            else:
+                return ERROR_QUERY.decode('utf-8')
 
     else:
         return  ERROR_QUERY.decode('utf-8')
 
 def translate_visual_selection(word):
-
     word = word.decode('utf-8')
     info = get_word_info( word )
     vim.command('echo "'+ info +'"')
@@ -99,5 +109,3 @@ endfunction
 command! Ydv :call <SID>YoudaoVisualTranslate()
 command! Ydc :call <SID>YoudaoCursorTranslate()
 command! Yde :call <SID>YoudaoEnterTranslate()
-
-
