@@ -55,14 +55,15 @@ def get_word_info(word):
         return NETWORK_ERROR
     if r.getcode() == 200:
         doc = ET.fromstring(r.read())
-        info = collections.defaultdict(list)
-
-        if not len(doc.findall(".//content")):
-            return WARN_NOT_FIND
 
         phrase = doc.find(".//return-phrase").text
         p = re.compile(r"^%s$"%word, re.IGNORECASE)
         if p.match(phrase):
+            info = collections.defaultdict(list)
+
+            if not len(doc.findall(".//content")):
+                return WARN_NOT_FIND
+
             for el in doc.findall(".//"):
                 if el.tag in ('return-phrase','phonetic-symbol'):
                     if el.text:
