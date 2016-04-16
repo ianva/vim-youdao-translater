@@ -47,7 +47,7 @@ def get_word_info(word):
     if not word:
         return ''
     try:
-        r = urllib.urlopen("http://dict.youdao.com" + "/fsearch?q=" + word)
+        r = urllib.urlopen("http://dict.youdao.com" + "/fsearch?q=" + word.encode('utf-8'))
     except IOError, e:
         return NETWORK_ERROR
     if r.getcode() == 200:
@@ -79,7 +79,7 @@ def get_word_info(word):
             return tpl % info
         else:
             try:
-                r = urllib.urlopen("http://fanyi.youdao.com" + "/translate?i=" + word)
+                r = urllib.urlopen("http://fanyi.youdao.com" + "/translate?i=" + word.encode('utf-8'))
             except IOError, e:
                 return NETWORK_ERROR
             p = re.compile(r"\"translateResult\":\[\[{\"src\":\"%s\",\"tgt\":\"(?P<result>.*)\"}\]\]"
