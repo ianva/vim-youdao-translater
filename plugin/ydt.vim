@@ -29,8 +29,9 @@ ERROR_QUERY = " 有道翻译查询出错!".decode('utf-8')
 NETWORK_ERROR = " 无法连接有道服务器!".decode('utf-8')
 
 def split_word(word):
-    array = word.split('_')
-    array = word.split('\n')
+    array = []
+    for i in word.split('_'):
+        array += i.split('\n')
     word = []
     p = re.compile('[a-z][A-Z]')
     for piece in array:
