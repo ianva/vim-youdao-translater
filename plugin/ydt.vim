@@ -90,7 +90,7 @@ def get_word_info(word):
                     % word.encode('utf-8'))
             s = p.search(r.read())
             if s:
-                return " %s %s" % (word, s.group('result').decode('utf-8'))
+                return " The original: %s\tThe translation: %s" % (word, s.group('result').decode('utf-8'))
             else:
                 return ERROR_QUERY
     else:
