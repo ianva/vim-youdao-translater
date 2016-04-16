@@ -1,6 +1,6 @@
 # vim youdao translater
 
-vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vim插件，可以帮你在 vim 中翻译单词
+vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vim插件，可以帮你在 vim 中翻译单词或语句
 
 ##安装
 
@@ -28,7 +28,7 @@ vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao
 
 在普通模式下，按 `ctrl+t`， 会翻译当前光标下的单词；
 
-在 `visual` 模式下选中单词或语句，按 `ctrl+t`，会翻译选择的单词；
+在 `visual` 模式下选中单词或语句，按 `ctrl+t`，会翻译选择的单词或语句；
 
 点击引导键再点y，d，可以在命令行输入要翻译的单词或语句；
 
