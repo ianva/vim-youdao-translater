@@ -20,14 +20,27 @@ endfunction
 
 
 python << EOF
-import vim,requests,collections,xml.etree.ElementTree as ET
+import vim,requests,re,collections,xml.etree.ElementTree as ET
 
 # -*- coding: utf-8 -*-
 
 WARN_NOT_FIND = " 找不到该单词的释义"
 ERROR_QUERY = " 有道翻译查询出错!"
 
+def split_word(word):
+    array = word.split('_')
+    word = []
+    p = re.compile('[a-z][A-Z]')
+    for piece in array:
+        lastIndex = 0
+        for i in p.finditer(piece):
+            word.append(piece[lastIndex:i.start() + 1])
+            lastIndex = i.start() + 1
+        word.append(piece[lastIndex:])
+    return ' '.join(word)
+
 def get_word_info(word):
+    word = split_word(word)
     if not word:
         return ''
     r = requests.get("http://dict.youdao.com" + "/fsearch?q=" + word)
