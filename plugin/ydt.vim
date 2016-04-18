@@ -20,52 +20,87 @@ endfunction
 
 
 python << EOF
-import vim,requests,collections,xml.etree.ElementTree as ET
+import vim,urllib,re,collections,xml.etree.ElementTree as ET
 
 # -*- coding: utf-8 -*-
 
-WARN_NOT_FIND = " 找不到该单词的释义"
-ERROR_QUERY = " 有道翻译查询出错!"
+WARN_NOT_FIND = " 找不到该单词的释义".decode('utf-8')
+ERROR_QUERY = " 有道翻译查询出错!".decode('utf-8')
+NETWORK_ERROR = " 无法连接有道服务器!".decode('utf-8')
+QUERY_BLACK_LIST = ['.', '|', '^', '$', '\\', '[', ']', '{', '}', '*', '+',
+        '?', '(', ')', '&', '=', '\"', '\'', '\t']
+
+def preprocess_word(word):
+    word = word.strip()
+    for i in QUERY_BLACK_LIST:
+        word = word.replace(i, ' ')
+    array = word.split('_')
+    word = []
+    p = re.compile('[a-z][A-Z]')
+    for piece in array:
+        lastIndex = 0
+        for i in p.finditer(piece):
+            word.append(piece[lastIndex:i.start() + 1])
+            lastIndex = i.start() + 1
+        word.append(piece[lastIndex:])
+    return ' '.join(word).strip()
 
 def get_word_info(word):
+    word = preprocess_word(word)
     if not word:
         return ''
-    r = requests.get("http://dict.youdao.com" + "/fsearch?q=" + word)
-    if r.status_code == 200:
+    try:
+        r = urllib.urlopen("http://dict.youdao.com" + "/fsearch?q=" + word.encode('utf-8'))
+    except IOError, e:
+        return NETWORK_ERROR
+    if r.getcode() == 200:
+        doc = ET.fromstring(r.read())
 
-        doc = ET.fromstring(r.content)
-        info = collections.defaultdict(list)
+        phrase = doc.find(".//return-phrase").text
+        p = re.compile(r"^%s$"%word, re.IGNORECASE)
+        if p.match(phrase):
+            info = collections.defaultdict(list)
 
+            if not len(doc.findall(".//content")):
+                return WARN_NOT_FIND
 
-        if not len(doc.findall(".//content")):
-            return WARN_NOT_FIND.decode('utf-8')
+            for el in doc.findall(".//"):
+                if el.tag in ('return-phrase','phonetic-symbol'):
+                    if el.text:
+                        info[el.tag].append(el.text.encode("utf-8"))
+                elif el.tag in ('content','value'):
+                    if el.text:
+                        info[el.tag].append(el.text.encode("utf-8"))
 
-        for el in doc.findall(".//"):
-            if el.tag in ('return-phrase','phonetic-symbol'):
-                if el.text:
-                    info[el.tag].append(el.text.encode("utf-8"))
-            elif el.tag in ('content','value'):
-                if el.text:
-                    info[el.tag].append(el.text.encode("utf-8"))
+            for k,v in info.items():
+                info[k] = ' | '.join(v) if k == "content" else ' '.join(v)
 
-        for k,v in info.items():
-            info[k] = ' | '.join(v) if k == "content" else ' '.join(v)
+            tpl = ' %(return-phrase)s'
+            if info["phonetic-symbol"]:
+                tpl = tpl + ' [%(phonetic-symbol)s]'
+            tpl = tpl +' %(content)s'
 
-        tpl = ' %(return-phrase)s'
-        if info["phonetic-symbol"]:
-            tpl = tpl + ' [%(phonetic-symbol)s]'
-        tpl = tpl +' %(content)s'
-
-        return tpl % info
-
+            return tpl % info
+        else:
+            try:
+                r = urllib.urlopen("http://fanyi.youdao.com" + "/translate?i=" + word.encode('utf-8'))
+            except IOError, e:
+                return NETWORK_ERROR
+            p = re.compile(r"\"translateResult\":\[\[{\"src\":\"%s\",\"tgt\":\"(?P<result>.*)\"}\]\]"
+                    % word.encode('utf-8'))
+            s = p.search(r.read())
+            if s:
+                return " %s" % s.group('result').decode('utf-8')
+            else:
+                return ERROR_QUERY
     else:
-        return  ERROR_QUERY.decode('utf-8')
+        return  ERROR_QUERY
 
-def translate_visual_selection(word):
-
-    word = word.decode('utf-8')
-    info = get_word_info( word )
-    vim.command('echo "'+ info +'"')
+def translate_visual_selection(lines):
+    lines = lines.decode('utf-8')
+    for line in lines.split('\n'):
+        info = get_word_info(line)
+        vim.command('echo "'+ info +'"')
 
 EOF
 
@@ -86,5 +121,3 @@ endfunction
 command! Ydv :call <SID>YoudaoVisualTranslate()
 command! Ydc :call <SID>YoudaoCursorTranslate()
 command! Yde :call <SID>YoudaoEnterTranslate()
-
-
