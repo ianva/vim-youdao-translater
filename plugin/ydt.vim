@@ -114,7 +114,7 @@ endfunction
 
 function! s:YoudaoEnterTranslate()
     let word = input("Please enter the word: ")
-    redraw
+    redraw!
     python translate_visual_selection(vim.eval("word"))
 endfunction
 
