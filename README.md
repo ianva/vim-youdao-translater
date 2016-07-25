@@ -37,6 +37,9 @@ noremap <leader>yd :<C-u>Yde<CR>
 
 
 ##License
+
+The MIT License (MIT)
+
 Copyright (c) ianva
 
 
