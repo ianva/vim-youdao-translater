@@ -102,10 +102,23 @@ def translate_visual_selection(lines):
         info = get_word_info(line)
         vim.command('echo "'+ info +'"')
 
+def get_text_info(text):
+
+    r = requests.get("http://fanyi.youdao.com/translate?i=" + text + "&ue=utf-8&keyfrom=baidu&smartresult=dict&type=AUTO")
+    if r.status_code == 200:
+        result = r.content.find("\"tgt\":")+6
+        result_end = r.content[result:].find("}")+result
+        print r.content[result:result_end]
+
+def translate_text_selection(text):
+
+    text = text.decode('utf-8')
+    get_text_info( text )
+
 EOF
 
 function! s:YoudaoVisualTranslate()
-    python translate_visual_selection(vim.eval("<SID>GetVisualSelection()"))
+    python translate_text_selection(vim.eval("<SID>GetVisualSelection()"))
 endfunction
 
 function! s:YoudaoCursorTranslate()
