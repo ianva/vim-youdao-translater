@@ -2,9 +2,9 @@
 
 vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao.com/) 制作的vim插件，可以帮你在 vim 中翻译单词或语句
 
-##安装
+## 安装
 
-###普通安装:
+### 普通安装:
 把 `ydt.vim` 文件拷贝到 `~/.vim/plugin` 目录下，就可以用了。
 
 
@@ -24,7 +24,7 @@ nnoremap <silent> <C-T> :<C-u>Ydc<CR>
 noremap <leader>yd :<C-u>Yde<CR>
 ```
 
-##如何使用
+## 如何使用
 
 在普通模式下，按 `ctrl+t`， 会翻译当前光标下的单词；
 
@@ -36,7 +36,7 @@ noremap <leader>yd :<C-u>Yde<CR>
 
 
 
-##License
+## License
 
 The MIT License (MIT)
 
