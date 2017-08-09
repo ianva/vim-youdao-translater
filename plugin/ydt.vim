@@ -81,9 +81,9 @@ def get_word_info(word):
         return ''
     try:
         if PY3K:
-            url = 'http://dict.youdao.com' + '/fsearch?q=' + word
+            url = 'http://dict.youdao.com' + '/fsearch?q=' + urllib.parse.quote(word)
         else:
-            url = 'http://dict.youdao.com' + '/fsearch?q=' + word.encode('utf-8')
+            url = 'http://dict.youdao.com' + '/fsearch?q=' + urllib.quote(word.encode('utf-8'))
         r = urlopen(url)
     except IOError:
         return NETWORK_ERROR
@@ -120,9 +120,9 @@ def get_word_info(word):
         else:
             try:
                 if PY3K:
-                    url = "http://fanyi.youdao.com" + "/translate?i=" + word
+                    url = "http://fanyi.youdao.com" + "/translate?i=" + urllib.parse.quote(word)
                 else:
-                    url = "http://fanyi.youdao.com" + "/translate?i=" + word.encode('utf-8')
+                    url = "http://fanyi.youdao.com" + "/translate?i=" + urllib.quote(word.encode('utf-8'))
                 r = urlopen(url)
             except IOError:
                 return NETWORK_ERROR
