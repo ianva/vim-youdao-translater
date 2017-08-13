@@ -6,7 +6,7 @@ function! s:UsingPython3()
   if has('python')
     return 0
   endif
-  echo "Error: Required vim compiled with +python"
+  echo "Error: Required vim compiled with +python/+python3"
   finish
 endfunction
 
@@ -29,14 +29,11 @@ function! s:GetCursorWord()
     return expand("<cword>")
 endfunction
 
-
 exec s:python_until_eof
 
 # -*- coding: utf-8 -*-
 import vim,urllib,re,collections,xml.etree.ElementTree as ET
 import sys
-
-PY3K = sys.version_info >= (3, 0)
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -47,14 +44,33 @@ except ImportError:
     from urllib import urlencode
     from urllib2 import urlopen, Request, HTTPError
 
-if PY3K:
-    WARN_NOT_FIND = " 找不到该单词的释义"
-    ERROR_QUERY = " 有道翻译查询出错!"
-    NETWORK_ERROR = " 无法连接有道服务器!"
-else:
-    WARN_NOT_FIND = " 找不到该单词的释义".decode('utf-8')
-    ERROR_QUERY = " 有道翻译查询出错!".decode('utf-8')
-    NETWORK_ERROR = " 无法连接有道服务器!".decode('utf-8')
+def str_encode(word):
+    if sys.version_info >= (3, 0):
+        return word
+    else:
+        return word.encode('utf-8')
+
+def str_decode(word):
+    if sys.version_info >= (3, 0):
+        return word
+    else:
+        return word.decode('utf-8')
+
+def bytes_decode(word):
+    if sys.version_info >= (3, 0):
+        return word.decode()
+    else:
+        return word
+
+def url_quote(word):
+    if sys.version_info >= (3, 0):
+        return urllib.parse.quote(word)
+    else:
+        return urllib.quote(word.encode('utf-8'))
+
+WARN_NOT_FIND = str_decode(" 找不到该单词的释义")
+ERROR_QUERY   = str_decode(" 有道翻译查询出错!")
+NETWORK_ERROR = str_decode(" 无法连接有道服务器!")
 
 QUERY_BLACK_LIST = ['.', '|', '^', '$', '\\', '[', ']', '{', '}', '*', '+',
         '?', '(', ')', '&', '=', '\"', '\'', '\t']
@@ -80,11 +96,7 @@ def get_word_info(word):
     if not word:
         return ''
     try:
-        if PY3K:
-            url = 'http://dict.youdao.com' + '/fsearch?q=' + urllib.parse.quote(word)
-        else:
-            url = 'http://dict.youdao.com' + '/fsearch?q=' + urllib.quote(word.encode('utf-8'))
-        r = urlopen(url)
+        r = urlopen('http://dict.youdao.com' + '/fsearch?q=' + url_quote(word))
     except IOError:
         return NETWORK_ERROR
     if r.getcode() == 200:
@@ -108,8 +120,7 @@ def get_word_info(word):
 
             for k,v in info.items():
                 info[k] = b' | '.join(v) if k == "content" else b' '.join(v)
-                if PY3K:
-                    info[k] = info[k].decode()
+                info[k] = bytes_decode(info[k])
 
             tpl = ' %(return-phrase)s'
             if info["phonetic-symbol"]:
@@ -119,36 +130,23 @@ def get_word_info(word):
             return tpl % info
         else:
             try:
-                if PY3K:
-                    url = "http://fanyi.youdao.com" + "/translate?i=" + urllib.parse.quote(word)
-                else:
-                    url = "http://fanyi.youdao.com" + "/translate?i=" + urllib.quote(word.encode('utf-8'))
-                r = urlopen(url)
+                r = urlopen("http://fanyi.youdao.com" + "/translate?i=" + url_quote(word))
             except IOError:
                 return NETWORK_ERROR
 
-            if PY3K:
-                p = re.compile(r"\"translateResult\":\[\[{\"src\":\"%s\",\"tgt\":\"(?P<result>.*)\"}\]\]" % word)
-            else:
-                p = re.compile(r"\"translateResult\":\[\[{\"src\":\"%s\",\"tgt\":\"(?P<result>.*)\"}\]\]" % word.encode('utf-8'))
+            p = re.compile(r"\"translateResult\":\[\[{\"src\":\"%s\",\"tgt\":\"(?P<result>.*)\"}\]\]" % str_encode(word))
 
-            r_result = r.read()
-            if PY3K:
-                r_result = r_result.decode('utf-8')
+            r_result = bytes_decode(r.read())
             s = p.search(r_result)
             if s:
-                if PY3K:
-                    return " %s" % s.group('result')
-                else:
-                    return " %s" % s.group('result').decode('utf-8')
+                return str_decode(s.group('result'))
             else:
                 return ERROR_QUERY
     else:
         return  ERROR_QUERY
 
 def translate_visual_selection(lines):
-    if not PY3K:
-        lines = lines.decode('utf-8')
+    lines = str_decode(lines)
     for line in lines.split('\n'):
         info = get_word_info(line)
         vim.command('echo "'+ info +'"')
