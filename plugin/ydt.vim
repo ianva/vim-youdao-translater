@@ -33,7 +33,7 @@ exec s:python_until_eof
 
 # -*- coding: utf-8 -*-
 import vim,urllib,re,collections,xml.etree.ElementTree as ET
-import sys
+import sys,json
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -130,26 +130,40 @@ def get_word_info(word):
             return tpl % info
         else:
             try:
-                r = urlopen("http://fanyi.youdao.com" + "/translate?i=" + url_quote(word))
+                r = urlopen("http://fanyi.youdao.com" + "/translate?i=" + url_quote(word), timeout=5)
             except IOError:
                 return NETWORK_ERROR
 
-            p = re.compile(r"\"translateResult\":\[\[{\"src\":\"%s\",\"tgt\":\"(?P<result>.*)\"}\]\]" % str_encode(word))
+            p = re.compile(r"global.translatedJson = (?P<result>.*);")
 
             r_result = bytes_decode(r.read())
             s = p.search(r_result)
             if s:
-                return str_decode(s.group('result'))
+                r_result = json.loads(s.group('result'))
+                if r_result is None:
+                    return str_decode(s.group('result'))
+
+                error_code = r_result.get("errorCode")
+                if error_code is None or error_code != 0:
+                    return str_decode(s.group('result'))
+
+                translate_result = r_result.get("translateResult")
+                if translate_result is None:
+                    return str_decode(s.group('result'))
+
+                translate_result_tgt = ''
+                for i in translate_result:
+                    translate_result_tgt = translate_result_tgt + i[0].get("tgt") + "\n"
+
+                return translate_result_tgt
             else:
                 return ERROR_QUERY
     else:
         return  ERROR_QUERY
 
 def translate_visual_selection(lines):
-    lines = str_decode(lines)
-    for line in lines.split('\n'):
-        info = get_word_info(line)
-        vim.command('echo "'+ info +'"')
+    info = get_word_info(str_decode(lines))
+    vim.command('echo "'+ info +'"')
 EOF
 
 function! s:YoudaoVisualTranslate()
