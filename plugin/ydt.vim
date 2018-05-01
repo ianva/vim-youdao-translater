@@ -32,7 +32,14 @@ endfunction
 let s:translator.on_stderr = function(s:translator.on_stdout)
 
 function! s:translator.start(lines)
-    return jobstart(printf("%s %s %s", s:python_cmd, s:translator_file, a:lines), self)
+    let cmd = printf("%s %s %s", s:python_cmd, s:translator_file, a:lines)
+    if exists('*jobstart')
+        return jobstart(cmd, self)
+    elseif exists('*job_start')
+        return job_start(cmd, {'out_cb': "ydt#VimOutCallback"})
+    else
+        echo system(cmd)
+    endif
 endfunction
 
 function! s:YoudaoVisualTranslate()
