@@ -1,28 +1,3 @@
-" Check whether python is installed
-let s:python_cmd = "python"
-if !executable(s:python_cmd)
-    let s:python_cmd = "python3"
-endif
-if !executable(s:python_cmd)
-    echoerr "Error: python package need to be installed!"
-    finish
-endif
-
-" This function taken from the lh-vim repository
-function! s:GetVisualSelection()
-    try
-        let a_save = @a
-        normal! gv"ay
-        return @a
-    finally
-        let @a = a_save
-    endtry
-endfunction
-
-function! s:GetCursorWord()
-    return expand("<cword>")
-endfunction
-
 let s:translator_file = expand('<sfile>:p:h') . "/../youdao.py"
 let s:translator = {'stdout_buffered': v:true, 'stderr_buffered': v:true}
 
@@ -32,7 +7,13 @@ endfunction
 let s:translator.on_stderr = function(s:translator.on_stdout)
 
 function! s:translator.start(lines)
-    let cmd = printf("%s %s %s", s:python_cmd, s:translator_file, a:lines)
+    let python_cmd = ydt#GetAvailablePythonCmd()
+    if empty(python_cmd)
+        echoerr "[YouDaoTranslator] [Error]: Python package neeeds to be installed!"
+        return -1
+    endif
+
+    let cmd = printf("%s %s %s", python_cmd, s:translator_file, a:lines)
     if exists('*jobstart')
         return jobstart(cmd, self)
     elseif exists('*job_start')
@@ -43,11 +24,11 @@ function! s:translator.start(lines)
 endfunction
 
 function! s:YoudaoVisualTranslate()
-    call s:translator.start(<SID>GetVisualSelection())
+    call s:translator.start(ydt#GetVisualSelection())
 endfunction
 
 function! s:YoudaoCursorTranslate()
-    call s:translator.start(<SID>GetCursorWord())
+    call s:translator.start(expand("<cword>"))
 endfunction
 
 function! s:YoudaoEnterTranslate()
