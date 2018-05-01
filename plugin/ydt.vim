@@ -1,12 +1,18 @@
-" Check whether python is installed
-let s:python_cmd = "python"
-if !executable(s:python_cmd)
-    let s:python_cmd = "python3"
-endif
-if !executable(s:python_cmd)
-    echoerr "Error: python package need to be installed!"
-    finish
-endif
+"Check if py3 is supported
+function! s:UsingPython3()
+  if has('python3')
+    return 1
+  endif
+  if has('python')
+    return 0
+  endif
+  echo "Error: Required vim compiled with +python/+python3"
+  finish
+endfunction
+
+let s:using_python3 = s:UsingPython3()
+let s:python_until_eof = s:using_python3 ? "python3 << EOF" : "python << EOF"
+let s:python_command = s:using_python3 ? "py3 " : "py "
 
 " This function taken from the lh-vim repository
 function! s:GetVisualSelection()
@@ -23,30 +29,155 @@ function! s:GetCursorWord()
     return expand("<cword>")
 endfunction
 
-let s:translator_file = expand('<sfile>:p:h') . "/../youdao.py"
-let s:translator = {'stdout_buffered': v:true, 'stderr_buffered': v:true}
+exec s:python_until_eof
 
-function! s:translator.on_stdout(jobid, data, event)
-    if !empty(a:data) | echo join(a:data) | endif
-endfunction
-let s:translator.on_stderr = function(s:translator.on_stdout)
+# -*- coding: utf-8 -*-
+import vim,urllib,re,collections,xml.etree.ElementTree as ET
+import sys,json
 
-function! s:translator.start(lines)
-    return jobstart(printf("%s %s %s", s:python_cmd, s:translator_file, a:lines), self)
-endfunction
+try:
+    from urllib.parse import urlparse, urlencode
+    from urllib.request import urlopen, Request
+    from urllib.error import HTTPError
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlencode
+    from urllib2 import urlopen, Request, HTTPError
+
+def str_encode(word):
+    if sys.version_info >= (3, 0):
+        return word
+    else:
+        return word.encode('utf-8')
+
+def str_decode(word):
+    if sys.version_info >= (3, 0):
+        return word
+    else:
+        return word.decode('utf-8')
+
+def bytes_decode(word):
+    if sys.version_info >= (3, 0):
+        return word.decode()
+    else:
+        return word
+
+def url_quote(word):
+    if sys.version_info >= (3, 0):
+        return urllib.parse.quote(word)
+    else:
+        return urllib.quote(word.encode('utf-8'))
+
+WARN_NOT_FIND = str_decode(" 找不到该单词的释义")
+ERROR_QUERY   = str_decode(" 有道翻译查询出错!")
+NETWORK_ERROR = str_decode(" 无法连接有道服务器!")
+
+QUERY_BLACK_LIST = ['.', '|', '^', '$', '\\', '[', ']', '{', '}', '*', '+',
+        '?', '(', ')', '&', '=', '\"', '\'', '\t']
+
+def preprocess_word(word):
+    word = word.strip()
+    for i in QUERY_BLACK_LIST:
+        word = word.replace(i, ' ')
+    array = word.split('_')
+    word = []
+    p = re.compile('[a-z][A-Z]')
+    for piece in array:
+        lastIndex = 0
+        for i in p.finditer(piece):
+            word.append(piece[lastIndex:i.start() + 1])
+            lastIndex = i.start() + 1
+        word.append(piece[lastIndex:])
+    return ' '.join(word).strip()
+
+
+def get_word_info(word):
+    word = preprocess_word(word)
+    if not word:
+        return ''
+    try:
+        r = urlopen('http://dict.youdao.com' + '/fsearch?q=' + url_quote(word))
+    except IOError:
+        return NETWORK_ERROR
+    if r.getcode() == 200:
+        doc = ET.fromstring(r.read())
+
+        phrase = doc.find(".//return-phrase").text
+        p = re.compile(r"^%s$"%word, re.IGNORECASE)
+        if p.match(phrase):
+            info = collections.defaultdict(list)
+
+            if not len(doc.findall(".//content")):
+                return WARN_NOT_FIND
+
+            for el in doc.findall(".//"):
+                if el.tag in ('return-phrase','phonetic-symbol'):
+                    if el.text:
+                        info[el.tag].append(el.text.encode("utf-8"))
+                elif el.tag in ('content','value'):
+                    if el.text:
+                        info[el.tag].append(el.text.encode("utf-8"))
+
+            for k,v in info.items():
+                info[k] = b' | '.join(v) if k == "content" else b' '.join(v)
+                info[k] = bytes_decode(info[k])
+
+            tpl = ' %(return-phrase)s'
+            if info["phonetic-symbol"]:
+                tpl = tpl + ' [%(phonetic-symbol)s]'
+            tpl = tpl +' %(content)s'
+
+            return tpl % info
+        else:
+            try:
+                r = urlopen("http://fanyi.youdao.com" + "/translate?i=" + url_quote(word), timeout=5)
+            except IOError:
+                return NETWORK_ERROR
+
+            p = re.compile(r"global.translatedJson = (?P<result>.*);")
+
+            r_result = bytes_decode(r.read())
+            s = p.search(r_result)
+            if s:
+                r_result = json.loads(s.group('result'))
+                if r_result is None:
+                    return str_decode(s.group('result'))
+
+                error_code = r_result.get("errorCode")
+                if error_code is None or error_code != 0:
+                    return str_decode(s.group('result'))
+
+                translate_result = r_result.get("translateResult")
+                if translate_result is None:
+                    return str_decode(s.group('result'))
+
+                translate_result_tgt = ''
+                for i in translate_result:
+                    translate_result_tgt = translate_result_tgt + i[0].get("tgt") + "\n"
+
+                return translate_result_tgt
+            else:
+                return ERROR_QUERY
+    else:
+        return  ERROR_QUERY
+
+def translate_visual_selection(lines):
+    info = get_word_info(str_decode(lines))
+    vim.command('echo "'+ info +'"')
+EOF
 
 function! s:YoudaoVisualTranslate()
-    call s:translator.start(<SID>GetVisualSelection())
+    exec s:python_command 'translate_visual_selection(vim.eval("<SID>GetVisualSelection()"))'
 endfunction
 
 function! s:YoudaoCursorTranslate()
-    call s:translator.start(<SID>GetCursorWord())
+    exec s:python_command 'translate_visual_selection(vim.eval("<SID>GetCursorWord()"))'
 endfunction
 
 function! s:YoudaoEnterTranslate()
     let word = input("Please enter the word: ")
     redraw!
-    call s:translator.start(word)
+    exec s:python_command 'translate_visual_selection(vim.eval("word"))'
 endfunction
 
 command! Ydv call <SID>YoudaoVisualTranslate()
