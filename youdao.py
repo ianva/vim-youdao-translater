@@ -129,7 +129,7 @@ def get_word_info(word):
         return  ERROR_QUERY
 
 if __name__ == "__main__":
-	argv = sys.argv
-	import string
-	info = get_word_info(str_decode(string.join(argv[1:])))
-	sys.stdout.write(info)
+    argv = sys.argv
+    import string
+    info = get_word_info(str_decode(string.join(argv[1:])))
+    sys.stdout.write(info)
