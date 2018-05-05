@@ -35,9 +35,9 @@ def url_quote(word):
     else:
         return urllib.quote(word.encode('utf-8'))
 
-WARN_NOT_FIND = str_decode(" 找不到该单词的释义")
-ERROR_QUERY   = str_decode(" 有道翻译查询出错!")
-NETWORK_ERROR = str_decode(" 无法连接有道服务器!")
+WARN_NOT_FIND = " 找不到该单词的释义"
+ERROR_QUERY   = " 有道翻译查询出错!"
+NETWORK_ERROR = " 无法连接有道服务器!"
 
 QUERY_BLACK_LIST = ['.', '|', '^', '$', '\\', '[', ']', '{', '}', '*', '+',
         '?', '(', ')', '&', '=', '\"', '\'', '\t']
