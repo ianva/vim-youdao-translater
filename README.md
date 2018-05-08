@@ -5,7 +5,7 @@ vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao
 ## 安装
 
 ### 普通安装:
-把 `ydt.vim` 文件拷贝到 `~/.vim/plugin` 目录下，就可以用了。
+把所有文件拷贝到 `~/.vim/` 目录下，就可以用了。
 
 
 ### pathogen 安装：
