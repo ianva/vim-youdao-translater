@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import urllib,re,collections,xml.etree.ElementTree as ET
-import sys,json
+import urllib, re, collections, xml.etree.ElementTree as ET
+import sys, json
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -11,11 +11,13 @@ except ImportError:
     from urllib import urlencode
     from urllib2 import urlopen, Request, HTTPError
 
+
 def str_encode(word):
     if sys.version_info >= (3, 0):
         return word
     else:
         return word.encode('utf-8')
+
 
 def str_decode(word):
     if sys.version_info >= (3, 0):
@@ -23,11 +25,13 @@ def str_decode(word):
     else:
         return word.decode('utf-8')
 
+
 def bytes_decode(word):
     if sys.version_info >= (3, 0):
         return word.decode()
     else:
         return word
+
 
 def url_quote(word):
     if sys.version_info >= (3, 0):
@@ -35,12 +39,13 @@ def url_quote(word):
     else:
         return urllib.quote(word.encode('utf-8'))
 
+
 WARN_NOT_FIND = " 找不到该单词的释义"
-ERROR_QUERY   = " 有道翻译查询出错!"
+ERROR_QUERY = " 有道翻译查询出错!"
 NETWORK_ERROR = " 无法连接有道服务器!"
 
-QUERY_BLACK_LIST = ['.', '|', '^', '$', '\\', '[', ']', '{', '}', '*', '+',
-        '?', '(', ')', '&', '=', '\"', '\'', '\t']
+QUERY_BLACK_LIST = ['.', '|', '^', '$', '\\', '[', ']', '{', '}', '*', '+', '?', '(', ')', '&', '=', '\"', '\'', '\t']
+
 
 def preprocess_word(word):
     word = word.strip()
@@ -70,7 +75,7 @@ def get_word_info(word):
         doc = ET.fromstring(r.read())
 
         phrase = doc.find(".//return-phrase").text
-        p = re.compile(r"^%s$"%word, re.IGNORECASE)
+        p = re.compile(r"^%s$" % word, re.IGNORECASE)
         if p.match(phrase):
             info = collections.defaultdict(list)
 
@@ -78,21 +83,21 @@ def get_word_info(word):
                 return WARN_NOT_FIND
 
             for el in doc.findall(".//"):
-                if el.tag in ('return-phrase','phonetic-symbol'):
+                if el.tag in ('return-phrase', 'phonetic-symbol'):
                     if el.text:
                         info[el.tag].append(el.text.encode("utf-8"))
-                elif el.tag in ('content','value'):
+                elif el.tag in ('content', 'value'):
                     if el.text:
                         info[el.tag].append(el.text.encode("utf-8"))
 
-            for k,v in info.items():
+            for k, v in info.items():
                 info[k] = b' | '.join(v) if k == "content" else b' '.join(v)
                 info[k] = bytes_decode(info[k])
 
             tpl = ' %(return-phrase)s'
             if info["phonetic-symbol"]:
                 tpl = tpl + ' [%(phonetic-symbol)s]'
-            tpl = tpl +' %(content)s'
+            tpl = tpl + ' %(content)s'
 
             return tpl % info
         else:
@@ -126,10 +131,10 @@ def get_word_info(word):
             else:
                 return ERROR_QUERY
     else:
-        return  ERROR_QUERY
+        return ERROR_QUERY
+
 
 if __name__ == "__main__":
     argv = sys.argv
-    import string
-    info = get_word_info(str_decode(string.join(argv[1:])))
+    info = get_word_info(str_decode("".join(argv[1:])))
     sys.stdout.write(info)
