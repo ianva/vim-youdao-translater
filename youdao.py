@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import urllib, re, collections, xml.etree.ElementTree as ET
-import sys, json
+import sys, json, os
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -63,7 +63,7 @@ def preprocess_word(word):
     return ' '.join(word).strip()
 
 
-def get_word_info(word):
+def youdao_translate(word):
     word = preprocess_word(word)
     if not word:
         return ''
@@ -134,7 +134,22 @@ def get_word_info(word):
         return ERROR_QUERY
 
 
+def translate(word):
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    dict_path = os.path.join(cwd, 'dict', 'dictionary.json')
+    with open(dict_path, 'r') as f:
+        dictionary = json.load(f)
+    trans = dictionary.get(word)
+    if trans:
+        trans = word + ' ' + trans
+        trans = trans.encode('utf-8')
+        return trans
+    else:
+        trans = youdao_translate(word)
+        return trans
+
+
 if __name__ == "__main__":
     argv = sys.argv
-    info = get_word_info(str_decode("".join(argv[1:])))
+    info = translate(str_decode("".join(argv[1:])))
     sys.stdout.write(info)
