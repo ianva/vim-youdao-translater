@@ -5,7 +5,7 @@ vim youdao translater 是一个利用 [有道词典在线版](http://dict.youdao
 ## 安装
 
 ### 版本说明
-Vim 8.0 以上版本直接用最新版（支持异步查询）    
+Vim 8.0 以上版本使用 3.0 以上版本（支持异步查询）    
 低版本的 Vim，或者其他的非标准 Vim，请使用 [2.5.1 版](https://github.com/ianva/vim-youdao-translater/releases/tag/2.5.1)
 
 ### 普通安装:
