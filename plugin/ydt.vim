@@ -8,11 +8,7 @@ endif
 function! s:translator.on_stdout(jobid, data, event)
     if !empty(a:data) | echo join(a:data) | endif
 endfunction
-if exists('*function')
-    let s:translator.on_stderr = function(s:translator.on_stdout)
-else
-    let s:translator.on_stderr = 's:translator.on_stdout'
-endif
+let s:translator.on_stderr = function('s:translator.on_stdout')
 
 function! s:translator.start(lines)
     let python_cmd = ydt#GetAvailablePythonCmd()
