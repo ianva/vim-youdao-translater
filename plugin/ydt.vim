@@ -1,10 +1,14 @@
 let s:translator_file = expand('<sfile>:p:h') . "/../youdao.py"
-let s:translator = {'stdout_buffered': v:true, 'stderr_buffered': v:true}
+if exists('v:true')
+    let s:translator = {'stdout_buffered': v:true, 'stderr_buffered': v:true}
+else
+    let s:translator = {'stdout_buffered': 1, 'stderr_buffered': 1}
+endif
 
 function! s:translator.on_stdout(jobid, data, event)
     if !empty(a:data) | echo join(a:data) | endif
 endfunction
-let s:translator.on_stderr = function(s:translator.on_stdout)
+let s:translator.on_stderr = function('s:translator.on_stdout')
 
 function! s:translator.start(lines)
     let python_cmd = ydt#GetAvailablePythonCmd()
