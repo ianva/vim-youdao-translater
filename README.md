@@ -42,7 +42,7 @@ noremap <leader>yd :<C-u>Yde<CR>
 
 ## License
 
-The MIT License (MIT)
+The 996ICU License (996ICU)
 
 Copyright (c) ianva
 
