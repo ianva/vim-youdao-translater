@@ -42,7 +42,7 @@ noremap <leader>yd :<C-u>Yde<CR>
 
 ## License
 
-The 996ICU License (996ICU)
+996 License
 
 Copyright (c) ianva
 
