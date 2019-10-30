@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import urllib, re, collections, xml.etree.ElementTree as ET
 import sys, json
+import io, platform
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -135,6 +136,8 @@ def get_word_info(word):
 
 
 if __name__ == "__main__":
+    if(platform.system()=='Windows'):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf8')
     argv = sys.argv
     info = get_word_info(str_decode("".join(argv[1:])))
     sys.stdout.write(info)
